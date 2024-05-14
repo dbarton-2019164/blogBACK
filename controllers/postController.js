@@ -5,11 +5,11 @@ const main = require('../app');
 const User = require('../models/userModel');
 //create post
 exports.createPost = async (req, res, next) => {
-    const { title, content, postedBy, image, likes, comments } = req.body;
+    const { title, content, image, likes, comments } = req.body;
 
     try {
-        const name = 'usuario'
-        const user = await User.findOne({ name });
+        //const name = 'usuario'
+        //const user = await User.findOne({ name });
         const result = await cloudinary.uploader.upload(image, {
             folder: "posts",
             width: 1200,
@@ -18,7 +18,6 @@ exports.createPost = async (req, res, next) => {
         const post = await Post.create({
             title,
             content,
-            postedBy: user._id,
             image: {
                 public_id: result.public_id,
                 url: result.secure_url
@@ -39,10 +38,9 @@ exports.createPost = async (req, res, next) => {
 }
 
 
-//show posts
 exports.showPost = async (req, res, next) => {
     try {
-        const posts = await Post.find().sort({ createdAt: -1 }).populate('postedBy', 'name');
+        const posts = await Post.find().sort({ createdAt: -1 }).populate('name');
         res.status(201).json({
             success: true,
             posts
@@ -54,7 +52,6 @@ exports.showPost = async (req, res, next) => {
 }
 
 
-//show single post
 exports.showSinglePost = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id).populate('comments.postedBy', 'name');
@@ -73,7 +70,6 @@ exports.showSinglePost = async (req, res, next) => {
 exports.deletePost = async (req, res, next) => {
     const currentPost = await Post.findById(req.params.id);
 
-    //delete post image in cloudinary       
     const ImgId = currentPost.image.public_id;
     if (ImgId) {
         await cloudinary.uploader.destroy(ImgId);
@@ -83,7 +79,7 @@ exports.deletePost = async (req, res, next) => {
         const post = await Post.findByIdAndRemove(req.params.id);
         res.status(200).json({
             success: true,
-            message: "post deleted"
+            message: "Publicacion borrada"
         })
 
     } catch (error) {
@@ -99,14 +95,12 @@ exports.updatePost = async (req, res, next) => {
         const { title, content, image } = req.body;
         const currentPost = await Post.findById(req.params.id);
 
-        //build the object data
         const data = {
             title: title || currentPost.title,
             content: content || currentPost.content,
             image: image || currentPost.image,
         }
 
-        //modify post image conditionally
         if (req.body.image !== '') {
 
             const ImgId = currentPost.image.public_id;
@@ -140,38 +134,36 @@ exports.updatePost = async (req, res, next) => {
 
 }
 
-//add comment
 exports.addComment = async (req, res, next) => {
-    const { comment } = req.body;
+    const { name, comment } = req.body;
     try {
-        const name = 'usuario'
-        const user = await User.findOne({ name });
         const postComment = await Post.findByIdAndUpdate(req.params.id, {
-            $push: { comments: { text: comment, postedBy: user._id } }
-        },
-            { new: true }
-        );
-        const post = await Post.findById(postComment._id).populate('comments.postedBy', 'name email');
+            $push: { 
+                comments: { 
+                    name, 
+                    text: comment 
+                } 
+            }
+        }, { new: true });
+
+        const post = await Post.findById(postComment._id);
         res.status(200).json({
             success: true,
             post
-        })
-
+        });
     } catch (error) {
         next(error);
     }
+};
 
-}
-
-
-//add like
+/*
 exports.addLike = async (req, res, next) => {
 
     try {
-        const name = 'usuario'
-        const user = await User.findOne({ name });
+
+     //   const user = await User.findOne({ email: 'admin@gmail.com' });
         const post = await Post.findByIdAndUpdate(req.params.id, {
-            $addToSet: { likes: user._id }
+            $addToSet: { likes: req.user._id }
         },
             { new: true }
         );
@@ -195,10 +187,10 @@ exports.addLike = async (req, res, next) => {
 exports.removeLike = async (req, res, next) => {
 
     try {
-        const name = 'usuario'
-        const user = await User.findOne({ name });
+      
+       // const user = await User.findOne({ email: 'admin@gmail.com' });
         const post = await Post.findByIdAndUpdate(req.params.id, {
-            $pull: { likes: user._id }
+            $pull: { likes: req.user._id }
         },
             { new: true }
         );
@@ -216,3 +208,4 @@ exports.removeLike = async (req, res, next) => {
     }
 
 }
+*/

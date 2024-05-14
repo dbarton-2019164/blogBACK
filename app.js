@@ -18,8 +18,9 @@ const { Server } = require("socket.io");
 const errorHandler = require('./middleware/error');
 const authRoutes = require('./routes/authRoutes');
 const postRoute = require('./routes/postRoute');
-
+const User = require('./models/userModel')
 // Database connection
+
 const dbConnection = async () => {
   try {
     mongoose.connection.on("open", () => {
@@ -33,6 +34,8 @@ const dbConnection = async () => {
       serverSelectionTimeoutMS: 5000,
       maxPoolSize: 50,
     });
+    await User.createDefaultAdmin();
+
   } catch (error) {
     console.log("Database connection failed", error);
   }
@@ -44,7 +47,7 @@ dbConnection();
 const server = http.createServer(app);
 const io = new Server(server);
 
-
+// para que acepte solicitudes de 5mb
 app.use(morgan('dev'));
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({

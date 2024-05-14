@@ -10,17 +10,16 @@ router.post('/create',
 );
 router.get('/show', showPost);
 router.get('/:id', showSinglePost);
-router.delete('/delete/:id', 
-//isAuthenticated, isAdmin,
+router.delete('/delete/:id',
  deletePost);
-router.put('/update/:id', //isAuthenticated, isAdmin,
+router.put('/update/:id',
  updatePost);
-router.put('/comment/:id', //isAuthenticated,
+router.put('/comment/:id',
  addComment);
-router.put('/addlike/:id', //isAuthenticated,
+/*router.put('/addlike/:id',
  addLike);
-router.put('/removelike/:id', //isAuthenticated,
+router.put('/removelike/:id',
  removeLike);
-
+*/
 
 module.exports = router;

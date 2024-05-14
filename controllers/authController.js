@@ -6,7 +6,7 @@ exports.signup = async (req, res, next) => {
     const { email } = req.body;
     const userExist = await User.findOne({ email });
     if (userExist) {
-        return next(new ErrorResponse("E-mail already registred", 400));
+        return next(new ErrorResponse("Correo ya registrado", 400));
     }
     try {
         const user = await User.create(req.body);
@@ -25,21 +25,21 @@ exports.signin = async (req, res, next) => {
         const { email, password } = req.body;
         //validation
         if (!email) {
-            return next(new ErrorResponse("please add an email", 403));
+            return next(new ErrorResponse("Ingresa un correo", 403));
         }
         if (!password) {
-            return next(new ErrorResponse("please add a password", 403));
+            return next(new ErrorResponse("Ingresa una contraseña", 403));
         }
 
-        //check user email
+   
         const user = await User.findOne({ email });
         if (!user) {
-            return next(new ErrorResponse("invalid credentials", 400));
+            return next(new ErrorResponse("Cuenta no encontrada", 400));
         }
-        //check password
+       
         const isMatched = await user.comparePassword(password);
         if (!isMatched) {
-            return next(new ErrorResponse("invalid credentials", 400));
+            return next(new ErrorResponse("Contraseña incorrecta", 400));
         }
 
         sendTokenResponse(user, 200, res);
@@ -51,34 +51,32 @@ exports.signin = async (req, res, next) => {
 const sendTokenResponse = async (user, codeStatus, res) => {
     const token = await user.getJwtToken();
     const options = { maxAge: 60 * 60 * 1000, httpOnly: true }
-    if (process.env.NODE_ENV === 'production') {
-        options.secure = true
-    }
+    
     res
         .status(codeStatus)
         .cookie('token', token, options)
         .json({
             success: true,
             id: user._id,
-            role: user.role
-        })
-}
+            role: user.role,
+            token: token 
+        });
+};
 
-//log out
+
 exports.logout = (req, res, next) => {
     res.clearCookie('token');
     res.status(200).json({
         success: true,
-        message: "logged out"
+        message: "Sesion cerrada"
     })
 }
 
 
-//user profile
 exports.userProfile = async (req, res, next) => {
-    const name = 'usuario'
-    const u = await User.findOne({ name });
-    const user = await User.findById(u._id).select('-password');
+     const u = await User.findOne({ email: 'admin@gmail.com' });
+    
+    const user = await User.findById(u.id).select('-password');
     res.status(200).json({
         success: true,
         user

@@ -10,7 +10,7 @@ const errorHandler = (err, req, res, next) => {
     }
 
     if (err.code === 11000) {
-        const message = "Duplicate field";
+        const message = "Campos duplicados";
         error = new ErrorResponse(message, 400);
     }
 
@@ -22,7 +22,7 @@ const errorHandler = (err, req, res, next) => {
 
     res.status(error.codeStatus || 500).json({
         success: false,
-        error: error.message || "server error"
+        error: error.message || "Error del servidor"
     })
 
 }

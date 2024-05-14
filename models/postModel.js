@@ -5,15 +5,11 @@ const postSchema = new mongoose.Schema(
     {
         title: {
             type: String,
-            required: [true, "title is required"],
+            required: [true, "El titulo es obligatorio"],
         },
         content: {
             type: String,
-            required: [true, "content is required"],
-        },
-        postedBy: {
-            type: ObjectId,
-            ref: "User",
+            required: [true, "El contenido es obligatorio"],
         },
         image: {
             url: String,
@@ -22,12 +18,9 @@ const postSchema = new mongoose.Schema(
         likes: [{ type: ObjectId, ref: "User" }],
         comments: [
             {
-                text: String,
-                created: { type: Date, default: Date.now },
-                postedBy: {
-                    type: ObjectId,
-                    ref: "User",
-                },
+                name: String, 
+                text: String, 
+                created: { type: Date, default: Date.now }
             },
         ],
     },
